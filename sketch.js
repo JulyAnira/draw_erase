@@ -303,11 +303,11 @@ function updateOscillators() {
   let coverageRatio = coveredPixels / totalPixels; 
   // print(coverageRatio)
  
-  if(coverageRatio > 0 && coverageRatio < 1.3){
-  let frequency1 = map(coverageRatio, 0, 1, 1, 190);
+  if(coverageRatio > 0 && coverageRatio < 1){
+  let frequency1 = map(coverageRatio, 0, 1, 1, 400);
       osc1.freq(frequency1);}
-  if (coverageRatio > 1.3) {
-    let frequency2 = map(indexFinger.x, 0, w, 10, 1200);
+  if (coverageRatio > 1) {
+    let frequency2 = map(indexFinger.x, 0, w, 10, 1400);
     let amp2 = map(indexFinger.y, 0, h, 0.5, 0.01); 
 
     osc2.freq(frequency2);
