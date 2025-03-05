@@ -1,3 +1,5 @@
+// test
+
 let leftHand = null;
 let rightHand = null;
 let handPose, faceMesh;
