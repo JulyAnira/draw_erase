@@ -1,0 +1,15 @@
+html, body {
+  background: yellowgreen;
+  margin: 0;
+  padding: 0;
+}
+canvas {
+  display: block;
+  border: 20px solid purple;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0px 20px 30px -20px;
+  border-radius: 20px;
+}
