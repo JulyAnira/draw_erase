@@ -303,10 +303,10 @@ function updateOscillators() {
   let coverageRatio = coveredPixels / totalPixels; 
   // print(coverageRatio)
  
-  if(coverageRatio > 0 && coverageRatio < 1.4){
+  if(coverageRatio > 0 && coverageRatio < 1.3){
   let frequency1 = map(coverageRatio, 0, 1, 1, 190);
       osc1.freq(frequency1);}
-  if (coverageRatio > 1.5) {
+  if (coverageRatio > 1.3) {
     let frequency2 = map(indexFinger.x, 0, w, 10, 1200);
     let amp2 = map(indexFinger.y, 0, h, 0.5, 0.01); 
 
@@ -387,6 +387,13 @@ function gotFaces(results) {
 
 function gotHands(results) {
   hands = results;
+  if (hands.length > 0) {
+    let hand = hands[0];
+    if (hand.handedness == "Right" && hand.index_finger_tip) {
+      indexFinger.x = hand.index_finger_tip.x;
+      indexFinger.y = hand.index_finger_tip.y;
+    }
+  }
 }
 
 function windowResized() {
