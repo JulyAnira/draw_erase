@@ -127,7 +127,6 @@ function calculateFaceDimensions() {
     maxY = max(maxY, keypoint.y);
   });
 
-  // Calculate center and dimensions
   faceCenterX = (minX + maxX) / 2;
   faceCenterY = (minY + maxY) / 2;
   faceWidth = maxX - minX;
@@ -147,7 +146,6 @@ function draw() {
 
   image(backgroundLayer, 0, 0);
 
-  // Draw video and painting
   image(video, 0, 0);
   image(painting, 0, 0);
 
@@ -277,8 +275,6 @@ function drawWithLeftHand(leftHand) {
   let { leftfinger1, leftfinger2, leftfinger3, leftfinger4, leftfinger5, leftWrist } = leftHand;
   painting.fill(drawColor);
   painting.noStroke();
-
-  // Cute drawing with rounded rectangles
   painting.rectMode(CENTER);
   painting.rect(leftfinger1.x, leftfinger1.y, 80, 80, 20);
   painting.rect(leftfinger2.x, leftfinger2.y, 80, 80, 20);
@@ -316,7 +312,7 @@ function checkHandCrossed(leftHand, rightHand) {
     leftfinger4.x,
     leftfinger5.x
   ];
-//
+
   let rightXValues = [
     rightfinger1.x,
     rightfinger2.x,
@@ -408,17 +404,14 @@ function showEmoji() {
   emojiScale = min(emojiScale + 0.1, 1);
   emojiOpacity = min(emojiOpacity + 25, 255);
 
-  // Calculate emoji size based on face dimensions
   let baseSize = max(faceWidth, faceHeight) * 1.5;
   let animatedSize = baseSize * emojiScale;
 
-  // Set text properties with animation
   textSize(animatedSize);
   textAlign(CENTER, CENTER);
 
   fill(255, 105, 180, emojiOpacity);
 
-  // Add bounce effect
   let bounceOffset = sin(frameCount * 0.2) * (10 * (1 - emojiScale));
 
   if (!this.bounceSoundPlayed) {
