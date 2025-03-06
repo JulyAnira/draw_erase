@@ -316,7 +316,7 @@ function checkHandCrossed(leftHand, rightHand) {
     leftfinger4.x,
     leftfinger5.x
   ];
-
+//
   let rightXValues = [
     rightfinger1.x,
     rightfinger2.x,
