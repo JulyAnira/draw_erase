@@ -39,9 +39,9 @@ let indexFinger = { x: w / 2, y: h / 2 }
 
 let options = {
   maxHands: 2,
-  flipped: true,
-  runtime: "mediapipe",
-  modelType: "lite",
+  flipped: true, 
+  runtime: "mediapipe", 
+  modelType: "lite", 
 };
 
 function preload() {
@@ -169,19 +169,9 @@ function draw() {
 
     textFont("Comic Sans MS");
     textStyle(BOLD);
+    fill(255, 105, 180);
     textSize(24);
     textAlign(CENTER);
-
-    let gradient = [];
-    gradient.push(color(255, 0, 0));
-    gradient.push(color(255, 127, 0));
-    gradient.push(color(255, 255, 0));
-    gradient.push(color(0, 255, 0));
-    gradient.push(color(0, 0, 255));
-    gradient.push(color(75, 0, 130));
-    gradient.push(color(148, 0, 211));
-
-    let statusMessage = "";
 
     if (!firstMarkReached) {
       statusMessage = "Let's paint a magical face! 🎨\nCross your hands to reset ✨";
@@ -190,21 +180,12 @@ function draw() {
     } else {
       gameStage = 2;
     }
-
-    for (let i = 0; i < statusMessage.length; i++) {
-      let char = statusMessage.charAt(i);
-      let colorIndex = i % gradient.length;
-      fill(gradient[colorIndex]);
-
-      text(char, w / 2 + i * 20 - (statusMessage.length * 10), 50);
-    }
-
+    text(statusMessage, w / 2, 50);
     if (gameStage === 2) {
       showEmoji();
       emojiShowed = true;
     }
   }
-
 
   drawHandKeypoints();
   updateOscillators();
@@ -217,7 +198,7 @@ function draw() {
     if (crossed) {
       restartGame()
       // console.log("⚠️ crossed");
-    }
+    } 
     // else {
     //   console.log("✅ not cross");
     // }
