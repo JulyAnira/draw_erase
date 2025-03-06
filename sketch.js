@@ -24,6 +24,7 @@ let emojiScale = 0;
 let emojiOpacity = 0;
 let emojiAnimationStarted = false;
 let emojiPosition = { x: 0, y: 0 };
+let emojiShowed = false;
 
 let whiteNoise = true;
 let whiteNoiseMax = 200;
@@ -33,24 +34,24 @@ let squareHeight = 3;
 let osc1, osc2;
 let x = 200;
 let y = 200;
-let indexFinger = { x : w/2, y : h/2}
+let indexFinger = { x: w / 2, y: h / 2 }
 
 let options = {
   maxHands: 2,
-  flipped: true, // boolean
-  runtime: "mediapipe", // also "mediapipe"
-  modelType: "lite", // also "lite",
+  flipped: true, 
+  runtime: "mediapipe", 
+  modelType: "lite", 
 };
 
 function preload() {
   faceMesh = ml5.faceMesh({ maxFaces: 1, flipHorizontal: true });
   handPose = ml5.handPose({ maxHands: 2, flipped: true });
-    sound = loadSound("400Hz.mp3");
-bounceSound= loadSound("jump.wav");
+  sound = loadSound("400Hz.mp3");
+  bounceSound = loadSound("jump.wav");
 
 
   theBackground = createGraphics(w, h);
-  theBackground.background(255, 192, 203); 
+  theBackground.background(255, 192, 203);
   for (let i = 0; i < 50; i++) {
     theBackground.noStroke();
     theBackground.fill(255, 255, 255, 100);
@@ -78,21 +79,21 @@ function setup() {
 
   faceMesh.detectStart(video, gotFaces);
   handPose.detectStart(video, gotHands);
-  
-    osc1 = new p5.Oscillator('triangle');
+
+  osc1 = new p5.Oscillator('triangle');
   osc1.start();
-  osc1.amp(0.1); 
-  osc1.freq(20); 
-    osc2 = new p5.Oscillator('swatooth');
-  osc2.amp(0); 
+  osc1.amp(0.1);
+  osc1.freq(20);
+  osc2 = new p5.Oscillator('swatooth');
+  osc2.amp(0);
   osc2.start();
 
   scaler = width / video.width;
 
   colors = [
-    color(255, 105, 180, 100), 
-    color(255, 182, 193, 100), 
-    color(173, 216, 230, 100), 
+    color(255, 105, 180, 100),
+    color(255, 182, 193, 100),
+    color(173, 216, 230, 100),
     color(152, 251, 152, 100),
     color(255, 223, 186, 100),
     color(255, 228, 225, 100),
@@ -105,7 +106,7 @@ function setup() {
     color(173, 216, 230, 100),
     color(250, 235, 215, 100),
     color(255, 182, 193, 100)
-];
+  ];
 
   drawColor = random(colors);
   colorIndex = colors.indexOf(drawColor);
@@ -170,23 +171,38 @@ function draw() {
     textStyle(BOLD);
     fill(255, 105, 180);
     textSize(24);
-      textAlign(CENTER);
+    textAlign(CENTER);
 
     if (!firstMarkReached) {
-      statusMessage = "Let's paint a magical face! 🎨\nPress 'r' to reset ✨";
+      statusMessage = "Let's paint a magical face! 🎨\nCross your hands to reset ✨";
     } else if (!secondMarkReached) {
-      statusMessage = "Oops! Time to clean up! 🧼\nPress 'r' to reset ✨";
+      statusMessage = "Oops! Time to clean up! 🧼\nCross your hands to reset ✨";
     } else {
       gameStage = 2;
     }
     text(statusMessage, w / 2, 50);
     if (gameStage === 2) {
       showEmoji();
+      emojiShowed = true;
     }
   }
 
   drawHandKeypoints();
-  updateOscillators(); 
+  updateOscillators();
+
+  if (leftHand && rightHand) {
+    drawWithLeftHand(leftHand);
+    eraseWithRightHand(rightHand);
+    checkHandCrossed(leftHand, rightHand);
+    let crossed = checkHandCrossed(leftHand, rightHand);
+    if (crossed) {
+      restartGame()
+      // console.log("⚠️ crossed");
+    } 
+    // else {
+    //   console.log("✅ not cross");
+    // }
+  }
   pop();
 }
 
@@ -223,27 +239,28 @@ function drawHandKeypoints() {
   for (let i = 0; i < hands.length; i++) {
     let hand = hands[i];
     if (hand.handedness === "Left" && hand.confidence > 0.9) {
-      let finger1 = hand.thumb_tip;
-      let finger2 = hand.index_finger_tip;
-      let finger3 = hand.middle_finger_tip;
-      let finger4 = hand.ring_finger_tip;
-      let finger5 = hand.pinky_finger_tip;
+      let leftfinger1 = hand.thumb_tip;
+      let leftfinger2 = hand.index_finger_tip;
+      let leftfinger3 = hand.middle_finger_tip;
+      let leftfinger4 = hand.ring_finger_tip;
+      let leftfinger5 = hand.pinky_finger_tip;
+      let leftWrist = hand.wrist;
 
-      leftHand = { finger1, finger2, finger3, finger4, finger5 };
+      leftHand = { leftfinger1, leftfinger2, leftfinger3, leftfinger4, leftfinger5, leftWrist };
       leftHand.confidence = hand.confidence;
     } else if (hand.handedness === "Right" && hand.confidence > 0.9) {
-      let finger1 = hand.thumb_tip;
-      let finger2 = hand.index_finger_tip;
-      let finger3 = hand.middle_finger_tip;
-      let finger4 = hand.ring_finger_tip;
-      let finger5 = hand.pinky_finger_tip;
+      let rightfinger1 = hand.thumb_tip;
+      let rightfinger2 = hand.index_finger_tip;
+      let rightfinger3 = hand.middle_finger_tip;
+      let rightfinger4 = hand.ring_finger_tip;
+      let rightfinger5 = hand.pinky_finger_tip;
       let rightWrist = hand.wrist;
 
-      rightHand = { finger1, finger2, finger3, finger4, finger5, rightWrist };
+      rightHand = { rightfinger1, rightfinger2, rightfinger3, rightfinger4, rightfinger5, rightWrist };
       rightHand.confidence = hand.confidence;
     }
   }
-  
+
   if (leftHand) {
     drawWithLeftHand(leftHand);
   }
@@ -251,37 +268,71 @@ function drawHandKeypoints() {
   if (rightHand) {
     eraseWithRightHand(rightHand);
   }
+  if (leftHand && rightHand) {
+    checkHandCrossed(leftHand, rightHand);
+  }
 }
 
-function drawWithLeftHand(hand) {
-  let { finger1, finger2, finger3, finger4, finger5 } = hand;
+function drawWithLeftHand(leftHand) {
+  let { leftfinger1, leftfinger2, leftfinger3, leftfinger4, leftfinger5, leftWrist } = leftHand;
   painting.fill(drawColor);
   painting.noStroke();
 
   // Cute drawing with rounded rectangles
   painting.rectMode(CENTER);
-  painting.rect(finger1.x, finger1.y, 80, 80, 20);
-  painting.rect(finger2.x, finger2.y, 80, 80, 20);
-  painting.rect(finger3.x, finger3.y, 80, 80, 20);
-  painting.rect(finger4.x, finger4.y, 80, 80, 20);
-  painting.rect(finger5.x, finger5.y, 80, 80, 20);
+  painting.rect(leftfinger1.x, leftfinger1.y, 80, 80, 20);
+  painting.rect(leftfinger2.x, leftfinger2.y, 80, 80, 20);
+  painting.rect(leftfinger3.x, leftfinger3.y, 80, 80, 20);
+  painting.rect(leftfinger4.x, leftfinger4.y, 80, 80, 20);
+  painting.rect(leftfinger5.x, leftfinger5.y, 80, 80, 20);
 }
 
-function eraseWithRightHand(hand) {
-  let { finger1, finger2, finger3, finger4, finger5, rightWrist } = hand;
+function eraseWithRightHand(rightHand) {
+  let { rightfinger1, rightfinger2, rightfinger3, rightfinger4, rightfinger5, rightWrist } = rightHand;
   painting.erase();
   painting.noStroke();
-  
+
   painting.beginShape();
-  painting.vertex(finger1.x, finger1.y);
-  painting.vertex(finger2.x, finger2.y);
-  painting.vertex(finger3.x, finger3.y);
-  painting.vertex(finger4.x, finger4.y);
-  painting.vertex(finger5.x, finger5.y);
+  painting.vertex(rightfinger1.x, rightfinger1.y);
+  painting.vertex(rightfinger2.x, rightfinger2.y);
+  painting.vertex(rightfinger3.x, rightfinger3.y);
+  painting.vertex(rightfinger4.x, rightfinger4.y);
+  painting.vertex(rightfinger5.x, rightfinger5.y);
   painting.vertex(rightWrist.x, rightWrist.y);
   painting.endShape(CLOSE);
 
   painting.noErase();
+}
+function checkHandCrossed(leftHand, rightHand) {
+  let { leftfinger1, leftfinger2, leftfinger3, leftfinger4, leftfinger5, leftWrist } = leftHand;
+  let { rightfinger1, rightfinger2, rightfinger3, rightfinger4, rightfinger5, rightWrist } = rightHand;
+  if (!leftHand || !rightHand) {
+    return false;
+  }
+  let leftXValues = [
+    leftfinger1.x,
+    leftfinger2.x,
+    leftfinger3.x,
+    leftfinger4.x,
+    leftfinger5.x
+  ];
+
+  let rightXValues = [
+    rightfinger1.x,
+    rightfinger2.x,
+    rightfinger3.x,
+    rightfinger4.x,
+    rightfinger5.x
+  ];
+
+  let leftMaxX = Math.max(...leftXValues);
+  let rightMinX = Math.min(...rightXValues);
+
+  // console.log(`maxright of lefthand xMax: ${leftMaxX}, maxleft of righthand xMin: ${rightMinX}`);
+
+  return leftMaxX > rightMinX;
+
+
 }
 
 function updateOscillators() {
@@ -298,20 +349,21 @@ function updateOscillators() {
     }
   }
 
-  let coverageRatio = coveredPixels / totalPixels; 
+  let coverageRatio = coveredPixels / totalPixels;
   // print(coverageRatio)
- 
-  if(coverageRatio > 0 && coverageRatio < 1.4){
-  let frequency1 = map(coverageRatio, 0, 1, 1, 190);
-      osc1.freq(frequency1);}
+
+  if (coverageRatio > 0 && coverageRatio < 1.4) {
+    let frequency1 = map(coverageRatio, 0, 1, 1, 190);
+    osc1.freq(frequency1);
+  }
   if (coverageRatio > 1.5) {
     let frequency2 = map(indexFinger.x, 0, w, 10, 1200);
-    let amp2 = map(indexFinger.y, 0, h, 0.5, 0.01); 
+    let amp2 = map(indexFinger.y, 0, h, 0.5, 0.01);
 
     osc2.freq(frequency2);
-    osc2.amp(amp2, 0.1); 
+    osc2.amp(amp2, 0.1);
   } else {
-    osc2.amp(0, 0.1); 
+    osc2.amp(0, 0.1);
   }
 }
 
@@ -347,7 +399,7 @@ function showEmoji() {
     emojiAnimationStarted = true;
     emojiScale = 0;
     emojiOpacity = 0;
-     this.bounceSoundPlayed = false;
+    this.bounceSoundPlayed = false;
   }
 
   emojiPosition.x = faceCenterX;
@@ -369,13 +421,13 @@ function showEmoji() {
   // Add bounce effect
   let bounceOffset = sin(frameCount * 0.2) * (10 * (1 - emojiScale));
 
-      if (!this.bounceSoundPlayed) {
+  if (!this.bounceSoundPlayed) {
     bounceSound.play();
     this.bounceSoundPlayed = true;
   }
 
 
- text(emoji, faceCenterX, faceCenterY + bounceOffset);
+  text(emoji, faceCenterX, faceCenterY + bounceOffset);
 
 }
 
@@ -392,18 +444,16 @@ function windowResized() {
   scaler = width / video.width;
 }
 
-function keyPressed() {
-  if (key === "r" || key === "R") {
-    // Reset all variables
-    painting.clear();
-    gameStage = 0;
-    firstMarkReached = false;
-    secondMarkReached = false;
-    drawColor = random(colors);
-    colorIndex = colors.indexOf(drawColor);
-    sparkles = [];
-    emojiAnimationStarted = false;
-    emojiScale = 0;
-    emojiOpacity = 0;
-  }
+function restartGame() {
+  painting.clear();
+  gameStage = 0;
+  firstMarkReached = false;
+  secondMarkReached = false;
+  drawColor = random(colors);
+  colorIndex = colors.indexOf(drawColor);
+  sparkles = [];
+  emojiAnimationStarted = false;
+  emojiShowed = false;
+  emojiScale = 0;
+  emojiOpacity = 0;
 }
